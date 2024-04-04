@@ -44,7 +44,7 @@ async def user_registraion(user: user_pydantic):
 
 @app.get("/")
 def root():
-    return {"Hello":"World"}
+    return {"Gaand":"Mara"}
 
 
 register_tortoise(
