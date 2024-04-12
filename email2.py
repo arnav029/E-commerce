@@ -53,7 +53,7 @@ async def send_email(email: EmailSchema, instance="User"):
   <p>
     Thanks for choosing Oceanore, please click on the button below to verify your account.
   </p>
-  <a href="http://localhost:8000/verification/?token={token}" style="display: inline-block; padding: 10px 20px; border-radius: 5px; color: white; text-decoration: none; font-weight: bold; background-color: #0275d8; transition: all 0.2s ease-in-out;">Verify your email</a>
+  <a href="http://localhost:8001/verification/?token={token}" style="display: inline-block; padding: 10px 20px; border-radius: 5px; color: white; text-decoration: none; font-weight: bold; background-color: #0275d8; transition: all 0.2s ease-in-out;">Verify your email</a>
   <p>
     Please kindly ignore this email if you did not register for Oceanore. Thanks.
   </p>
