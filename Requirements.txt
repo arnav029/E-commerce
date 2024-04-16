@@ -3,7 +3,7 @@ uvicorn
 passlib
 python-dotenv
 tortoise
-pydantic
+pydantic==2.7.0
 starlette
 jinja2
 pillow
