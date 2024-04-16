@@ -1,9 +1,8 @@
-
 from fastapi import FastAPI, Request, HTTPException, status, Depends
 from tortoise.contrib.fastapi import register_tortoise
 from models import *
 
-#authentication
+# authentication
 from authentication import *
 from fastapi.security import (OAuth2PasswordBearer, OAuth2PasswordRequestForm)
 
@@ -19,23 +18,24 @@ from fastapi.responses import HTMLResponse
 
 from starlette.templating import Jinja2Templates
 
-#image upload
-from fastapi import File,UploadFile
+# image upload
+from fastapi import File, UploadFile
 import secrets
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
 from datetime import datetime
+
 #
 app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 
-#static file setup config
-app.mount("/static", StaticFiles(directory="static"),name="static")
-
+# static file setup config
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 from fastapi import HTTPException
+
 
 class UnauthorizedUpdate(HTTPException):
     def __init__(self, detail: str, status_code: int = status.HTTP_401_UNAUTHORIZED):
@@ -46,7 +46,6 @@ class UnauthorizedUpdate(HTTPException):
         )
 
 
-
 @app.post("/token")
 async def generate_token(request_form: OAuth2PasswordRequestForm = Depends()):
     token = await token_generator(request_form.username, request_form.password)
@@ -55,14 +54,14 @@ async def generate_token(request_form: OAuth2PasswordRequestForm = Depends()):
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
-        payload = jwt.decode(token, config_credential["SECRET"], algorithms= ['HS256'])
-        user = await User.get(id = payload.get("id"))
+        payload = jwt.decode(token, config_credential["SECRET"], algorithms=['HS256'])
+        user = await User.get(id=payload.get("id"))
 
     except:
         raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail = "Invalid username or password",
-                headers={"WWW-Authenticate": "Bearer"}
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"}
 
         )
 
@@ -140,8 +139,6 @@ async def email_verification(request: Request, token: str):
         return UnauthorizedUpdate(detail="Invalid token  or expired token", status_code=status.HTTP_403_FORBIDDEN)
 
 
-
-
 @app.get("/")
 def root():
     return {"Hello": "There"}
@@ -152,7 +149,7 @@ async def create_upload_file(file: UploadFile = File(...),
                              user: user_pydanticIn = Depends(get_current_user)):
     FILEPATH = "./static/images"
     filename = file.filename
-    extension = filename.split(".")[1] #Getting extension
+    extension = filename.split(".")[1]  # Getting extension
 
     if extension not in ["png", "jpg"]:
         return {"status": "Error", "detail": "File extension not supported"}
@@ -165,14 +162,14 @@ async def create_upload_file(file: UploadFile = File(...),
     with open(generated_name, "wb") as file:
         file.write(file_content)
 
-    #PILLOW
+    # PILLOW
     img = Image.open(generated_name)
-    img = img.resize(size= (200,200))
+    img = img.resize(size=(200, 200))
     img.save(generated_name)
 
     file.close()
 
-    business  = await Business.get(owner=user)
+    business = await Business.get(owner=user)
     owner = await business.owner
 
     if owner == user:
@@ -180,19 +177,20 @@ async def create_upload_file(file: UploadFile = File(...),
         await business.save()
 
     else:
-        return UnauthorizedUpdate(detail="Not authenticated   to perform this action or invalid user input", status_code=status.HTTP_403_FORBIDDEN)
-
+        return UnauthorizedUpdate(detail="Not authenticated   to perform this action or invalid user input",
+                                  status_code=status.HTTP_403_FORBIDDEN)
 
     file_url = "localhost:8000" + generated_name[1:]
 
     return {"status": "ok", "filename": file_url}
+
 
 @app.post("/uploadfile/products/{id}")
 async def create_upload_file(id: int, file: UploadFile = File(...),
                              user: user_pydantic = Depends(get_current_user)):
     FILEPATH = "./static/images"
     filename = file.filename
-    extension = filename.split(".")[1] #Getting extension
+    extension = filename.split(".")[1]  # Getting extension
 
     if extension not in ["png", "jpg"]:
         return {"status": "Error", "detail": "File extension not supported"}
@@ -205,14 +203,14 @@ async def create_upload_file(id: int, file: UploadFile = File(...),
     with open(generated_name, "wb") as file:
         file.write(file_content)
 
-    #PILLOW
+    # PILLOW
     img = Image.open(generated_name)
-    img = img.resize(size= (200,200))
+    img = img.resize(size=(200, 200))
     img.save(generated_name)
 
     file.close()
 
-    product = await Product.get(id= id)
+    product = await Product.get(id=id)
     business = await product.business
     owner = await business.owner
 
@@ -221,20 +219,20 @@ async def create_upload_file(id: int, file: UploadFile = File(...),
         await product.save()
 
     else:
-        return UnauthorizedUpdate(detail="Not authenticated to perform this action or invalid user input", status_code=status.HTTP_403_FORBIDDEN)
+        return UnauthorizedUpdate(detail="Not authenticated to perform this action or invalid user input",
+                                  status_code=status.HTTP_403_FORBIDDEN)
 
 
-
-#CRUD functionality
+# CRUD functionality
 @app.post("/products")
 async def add_new_product(product: product_pydanticIn,
                           user: user_pydantic = Depends(get_current_user)):
     product = product.dict(exclude_unset=True)
 
-
-    #to avoid division error by zero
+    # to avoid division error by zero
     if product["original_price"] > 0:
-        product["percentage_discount"] = ((product["original_price"] - product["new_price"]) / product["original_price"]) * 100
+        product["percentage_discount"] = ((product["original_price"] - product["new_price"]) / product[
+            "original_price"]) * 100
 
         product_obj = await Product.create(**product, business=user)
         product_obj = await product_pydantic.from_tortoise_orm(product_obj)
@@ -272,10 +270,9 @@ async def get_product(id: int):
                     "email": owner.email_id,
                     "join_date": owner.join_date.strftime("%b %d %Y")
 
-
                 }
             }
-        }
+            }
 
 
 @app.delete("/product/{id}")
@@ -289,9 +286,8 @@ async def delete_product(id: int, user: user_pydantic = Depends(get_current_user
 
 
     else:
-        return UnauthorizedUpdate(detail="Not authenticated to perform this action or invalid user input", status_code=status.HTTP_403_FORBIDDEN)
-
-
+        return UnauthorizedUpdate(detail="Not authenticated to perform this action or invalid user input",
+                                  status_code=status.HTTP_403_FORBIDDEN)
 
     return {
         "status": "ok"
@@ -311,7 +307,7 @@ async def update_product(id: int,
 
     if user == owner and update_info["original_price"] > 0:
         update_info["percentage_discount"] = ((update_info["original_price"] -
-                                              update_info["new_price"]) / update_info["original_price"]) *100
+                                               update_info["new_price"]) / update_info["original_price"]) * 100
 
         product = await product.update_from_dict(update_info)
         await product.save()
@@ -326,14 +322,14 @@ async def update_product(id: int,
         #     "Not authenticated   to perform this action or invalid user input",
         #     {"WWW-Authenticate": "Bearer"}
         # )
-        return UnauthorizedUpdate(detail="Not authenticated to perform this action or invalid user input", status_code=status.HTTP_403_FORBIDDEN)
+        return UnauthorizedUpdate(detail="Not authenticated to perform this action or invalid user input",
+                                  status_code=status.HTTP_403_FORBIDDEN)
 
 
 @app.put("/business/{id}")
-async def update_business(id:int,
+async def update_business(id: int,
                           update_business: business_pydanticIn,
                           user: user_pydantic = Depends(get_current_user)):
-
     update_business = update_business.dict()
 
     business = await Business.get(id=id)
@@ -343,13 +339,12 @@ async def update_business(id:int,
         await business.update_from_dict(update_business)
         await business.save()
         response = await business_pydantic.from_tortoise_orm(business)
-        return {"status" : "ok",
+        return {"status": "ok",
                 "data": response}
 
     else:
-        return UnauthorizedUpdate(detail="Not authenticated to perform this action", status_code=status.HTTP_403_FORBIDDEN)
-
-
+        return UnauthorizedUpdate(detail="Not authenticated to perform this action",
+                                  status_code=status.HTTP_403_FORBIDDEN)
 
 
 register_tortoise(
