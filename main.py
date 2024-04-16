@@ -27,6 +27,8 @@ import secrets
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
+from datetime import datetime
+#
 app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
@@ -205,8 +207,8 @@ async def create_upload_file(id: int, file: UploadFile = File(...),
     file.close()
 
     product = await Product.get(id= id)
-    business =   await product.business
-    owner = await  business.owner
+    business = await product.business
+    owner = await business.owner
 
     if owner == user:
         product.product_image = token_name
@@ -219,20 +221,23 @@ async def create_upload_file(id: int, file: UploadFile = File(...),
             headers={"WWW-Authenticate": "Bearer"}
         )
 
+
 #CRUD functionality
 @app.post("/products")
 async def add_new_product(product: product_pydanticIn,
                           user: user_pydantic = Depends(get_current_user)):
     product = product.dict(exclude_unset=True)
 
+
     #to avoid division error by zero
-    if product["original_price"] >0:
-        product["percentage_discount"] = ((product["original_price"] - product["new_price"]) / product["original_price"]) *100
+    if product["original_price"] > 0:
+        product["percentage_discount"] = ((product["original_price"] - product["new_price"]) / product["original_price"]) * 100
 
         product_obj = await Product.create(**product, business=user)
-        product_obj = await product_pydantic.from_tortoise_orm(product_obj)
+        # product_obj = await product_pydantic.from_tortoise_orm(product_obj)
 
-        return { "status": "ok", "data": product_obj}
+        return {"status": "ok", "data": product_obj}
+
 
     else:
         return {"status": "error"}
@@ -240,16 +245,16 @@ async def add_new_product(product: product_pydanticIn,
 
 @app.get("/product")
 async def get_product():
-    response = await product_pydantic.from_tortoise_orm(Product.all())
+    response = await product_pydantic.from_queryset(Product.all())
     return {"status": "ok", "data": response}
 
 
-@app.get("/products/{id}")
+@app.get("/product/{id}")
 async def get_product(id: int):
     product = await Product.get(id=id)
     business = await product.business
     owner = await business.owner
-    response = await product_pydantic.from_queryset_single(product)
+    response = await product_pydantic.from_queryset_single(Product.get(id=id))
     return {"status": "ok",
             "data": {
                 "product_details": response,
@@ -257,10 +262,11 @@ async def get_product(id: int):
                     "name": business.business_name,
                     "city": business.city,
                     "region": business.region,
-                    "description": business.declaration,
+                    "description": business.business_description,
                     "logo": business.logo,
                     "owner_id": owner.id,
-                    "email": owner.email,
+                    "business_id": business.id,
+                    "email": owner.email_id,
                     "join_date": owner.join_date.strftime("%b %d %Y")
 
 
@@ -268,14 +274,15 @@ async def get_product(id: int):
             }
         }
 
-@app.delete("products/{id}")
+@app.delete("/product/{id}")
 async def delete_product(id: int, user: user_pydantic = Depends(get_current_user)):
     product = await Product.get(id=id)
     business = await product.business
     owner = await business.owner
 
     if user == owner:
-        product.delete()
+        await product.delete()
+
 
     else:
         raise Exception(
@@ -284,11 +291,66 @@ async def delete_product(id: int, user: user_pydantic = Depends(get_current_user
             headers={"WWW-Authenticate": "Bearer"}
         )
 
+
     return {
         "status": "ok"
     }
 
 
+@app.put("/product/{id}")
+async def update_product(id: int,
+                         update_info: product_pydanticIn,
+                         user: user_pydantic = Depends(get_current_user)):
+    product = await Product.get(id=id)
+    business = await product.business
+    owner = await business.owner
+
+    update_info = update_info.dict(exclude_unset=True)
+    update_info["date_published"] = datetime.utcnow()
+
+    if user == owner and update_info["original_price"] > 0:
+        update_info["percentage_discount"] = ((update_info["original_price"] -
+                                              update_info["new_price"]) / update_info["original_price"]) *100
+
+        product = await product.update_from_dict(update_info)
+        await product.save()
+        response = await product_pydantic.from_tortoise_orm(product)
+
+        return {"status": "ok", "data": response}
+
+    # return {"Hi": "Bro"}
+    #
+    else:
+        raise Exception(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detaIl="Not authenticated   to perform this action or invalid user input",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+
+@app.put("/business/{id}")
+async def update_business(id:int,
+                          update_business: business_pydanticIn,
+                          user: user_pydantic = Depends(get_current_user)):
+
+    update_business = update_business.dict()
+
+    business = await Business.get(id=id)
+    business_owner = await business.owner
+
+    if user == business_owner:
+        await business.update_from_dict(update_business)
+        await business.save()
+        response = await business_pydantic.from_tortoise_orm(business)
+        return {"status" : "ok",
+                "data": response}
+
+    else:
+        raise Exception(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detaIl="Not authenticated   to perform this action or invalid user input",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
 
 
 
