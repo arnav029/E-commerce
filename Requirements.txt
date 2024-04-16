@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+passlib
+python-dotenv
+tortoise
+pydantic
+starlette
+jinja2
+pillow
+fastapi-mail
