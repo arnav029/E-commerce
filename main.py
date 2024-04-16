@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException, status, Depends
 from tortoise.contrib.fastapi import register_tortoise
 from models import *
-
 # authentication
 from authentication import *
 from fastapi.security import (OAuth2PasswordBearer, OAuth2PasswordRequestForm)
