@@ -1,2 +1,4 @@
 virtual2
 .env
+static
+database.sqlite3

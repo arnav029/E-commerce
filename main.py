@@ -36,6 +36,19 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
 #static file setup config
 app.mount("/static", StaticFiles(directory="static"),name="static")
 
+
+from fastapi import HTTPException
+
+class UnauthorizedUpdate(HTTPException):
+    def __init__(self, detail: str, status_code: int = status.HTTP_401_UNAUTHORIZED):
+        super().__init__(
+            status_code=status_code,
+            detail=detail,
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+
+
 @app.post("/token")
 async def generate_token(request_form: OAuth2PasswordRequestForm = Depends()):
     token = await token_generator(request_form.username, request_form.password)
@@ -125,11 +138,9 @@ async def email_verification(request: Request, token: str):
                                           {"request": request,
                                            "username": user.username})
 
-        raise Exception(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detaIl="Invalid token or expired token",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+    else:
+        return UnauthorizedUpdate(detail="Invalid token  or expired token", status_code=status.HTTP_403_FORBIDDEN)
+
 
 
 
@@ -171,11 +182,8 @@ async def create_upload_file(file: UploadFile = File(...),
         await business.save()
 
     else:
-        raise Exception(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detaIl="Not authenticated to perform this action",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+        return UnauthorizedUpdate(detail="Not authenticated   to perform this action or invalid user input", status_code=status.HTTP_403_FORBIDDEN)
+
 
     file_url = "localhost:8000" + generated_name[1:]
 
@@ -215,11 +223,8 @@ async def create_upload_file(id: int, file: UploadFile = File(...),
         await product.save()
 
     else:
-        raise Exception(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detaIl="Not authenticated to perform this action",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+        return UnauthorizedUpdate(detail="Not authenticated to perform this action or invalid user input", status_code=status.HTTP_403_FORBIDDEN)
+
 
 
 #CRUD functionality
@@ -234,7 +239,7 @@ async def add_new_product(product: product_pydanticIn,
         product["percentage_discount"] = ((product["original_price"] - product["new_price"]) / product["original_price"]) * 100
 
         product_obj = await Product.create(**product, business=user)
-        # product_obj = await product_pydantic.from_tortoise_orm(product_obj)
+        product_obj = await product_pydantic.from_tortoise_orm(product_obj)
 
         return {"status": "ok", "data": product_obj}
 
@@ -274,6 +279,7 @@ async def get_product(id: int):
             }
         }
 
+
 @app.delete("/product/{id}")
 async def delete_product(id: int, user: user_pydantic = Depends(get_current_user)):
     product = await Product.get(id=id)
@@ -285,11 +291,8 @@ async def delete_product(id: int, user: user_pydantic = Depends(get_current_user
 
 
     else:
-        raise Exception(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detaIl="Not authenticated to perform this action",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+        return UnauthorizedUpdate(detail="Not authenticated to perform this action or invalid user input", status_code=status.HTTP_403_FORBIDDEN)
+
 
 
     return {
@@ -318,14 +321,14 @@ async def update_product(id: int,
 
         return {"status": "ok", "data": response}
 
-    # return {"Hi": "Bro"}
-    #
+
     else:
-        raise Exception(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detaIl="Not authenticated   to perform this action or invalid user input",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+        # raise Exception(
+        #     status.HTTP_401_UNAUTHORIZED,
+        #     "Not authenticated   to perform this action or invalid user input",
+        #     {"WWW-Authenticate": "Bearer"}
+        # )
+        return UnauthorizedUpdate(detail="Not authenticated to perform this action or invalid user input", status_code=status.HTTP_403_FORBIDDEN)
 
 
 @app.put("/business/{id}")
@@ -346,11 +349,8 @@ async def update_business(id:int,
                 "data": response}
 
     else:
-        raise Exception(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detaIl="Not authenticated   to perform this action or invalid user input",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+        return UnauthorizedUpdate(detail="Not authenticated to perform this action", status_code=status.HTTP_403_FORBIDDEN)
+
 
 
 
