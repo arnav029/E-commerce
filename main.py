@@ -1,7 +1,5 @@
-import fileinput
 
 from fastapi import FastAPI, Request, HTTPException, status, Depends
-from tortoise import models
 from tortoise.contrib.fastapi import register_tortoise
 from models import *
 
