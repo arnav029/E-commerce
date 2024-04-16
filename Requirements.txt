@@ -8,3 +8,4 @@ starlette
 jinja2
 pillow
 fastapi-mail
+tortoise-contrib
