@@ -71,7 +71,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 async def user_login(user: user_pydanticIn = Depends(get_current_user)):
     business = await Business.get(owner=user)
     logo = business.logo
-    logo_path = "localhost:8000/static/images" + logo
+    logo_path = "https://e-commerce-api-7osv.onrender.com//static/images" + logo
 
     return {
         "status": "ok",
@@ -179,7 +179,7 @@ async def create_upload_file(file: UploadFile = File(...),
         return UnauthorizedUpdate(detail="Not authenticated   to perform this action or invalid user input",
                                   status_code=status.HTTP_403_FORBIDDEN)
 
-    file_url = "localhost:8000" + generated_name[1:]
+    file_url = "https://e-commerce-api-7osv.onrender.com/" + generated_name[1:]
 
     return {"status": "ok", "filename": file_url}
 
