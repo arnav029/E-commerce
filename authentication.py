@@ -9,6 +9,14 @@ config_credential = dotenv_values(".env")
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
+class UnauthorizedUpdate(HTTPException):
+    def __init__(self, detail: str, status_code: int = status.HTTP_401_UNAUTHORIZED):
+        super().__init__(
+            status_code=status_code,
+            detail=detail,
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
 
 def get_hashed_password(password):
     return pwd_context.hash(password)
@@ -21,11 +29,7 @@ async def verify_token(token: str):
 
 
     except:
-        raise Exception(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detial="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+        return UnauthorizedUpdate(detail="Invalid token", status_code=status.HTTP_403_FORBIDDEN)
 
     return user
 
