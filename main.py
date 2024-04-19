@@ -178,16 +178,16 @@ async def root():
         },
         "Product Management": {
             "View All Products": "https://e-commerce-api-7osv.onrender.com/product",
-            "Upload Product Images": "https://mailchimp.com/developer/marketing/docs/e-commerce/ (requires product ID)",
+            "Upload Product Images": "https://e-commerce-api-7osv.onrender.com/uploadfile/product/{id}",
             "CRUD Operations": {
-                "Create (Publish)": "https://medium.com/@lotus.lin/e-commerce-apis-introduction-29664558a3b0",
-                "Read (Specific Product)": "https://mailchimp.com/developer/marketing/docs/e-commerce/",
-                "Update": "https://mailchimp.com/developer/marketing/docs/e-commerce/",
-                "Delete": "https://mailchimp.com/developer/marketing/docs/e-commerce/",
+                "Create (Publish)": "https://e-commerce-api-7osv.onrender.com/products/",
+                "Read (Specific Product)": "https://e-commerce-api-7osv.onrender.com/product/{id}",
+                "Update": "https://e-commerce-api-7osv.onrender.com/product/{id}",
+                "Delete": "https://e-commerce-api-7osv.onrender.com/{id}",
             },
         },
         "Profile Management": {
-            "Upload Profile Picture": "https://docs.render.com/",
+            "Upload Profile Picture": "https://e-commerce-api-7osv.onrender.com/uploadfile/profile",
         },
         "Note": "Use Postman for sending POST requests.",
     }
