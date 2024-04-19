@@ -9,6 +9,6 @@ jinja2
 pillow
 fastapi-mail
 tortoise-orm[fastapi]==0.17.3
-jwt
+pyjwt
 python-multipart
 bcrypt
