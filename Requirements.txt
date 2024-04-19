@@ -11,3 +11,4 @@ fastapi-mail
 tortoise-orm[fastapi]==0.17.3
 jwt
 python-multipart
+bcrypt
