@@ -9,6 +9,7 @@ config_credential = dotenv_values(".env")
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
+
 class UnauthorizedUpdate(HTTPException):
     def __init__(self, detail: str, status_code: int = status.HTTP_401_UNAUTHORIZED):
         super().__init__(
@@ -51,9 +52,9 @@ async def token_generator(username: str, password: str):
 
     if not user:
         raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid username or password",
-                headers={"WWW-Authenticate": "Bearer"}
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"}
 
         )
 

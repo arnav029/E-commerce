@@ -139,8 +139,58 @@ async def email_verification(request: Request, token: str):
 
 
 @app.get("/")
-def root():
-    return {"Hello": "There"}
+async def root():
+    """
+    Welcome to the E-commerce API!
+
+    This API is currently under maintenance and may take up to 50 seconds to initiate.
+    Here, you can manage your products, user accounts, and more.
+
+    **Getting Started:**
+
+    1. **Registration:** Create a new user account: https://docs.render.com/api
+    2. **Verification:** Check your account verification status: https://apiando.com/en/e-commerce/
+
+    **Product Management:**
+
+    - View all products: https://docs.render.com/api
+    - Upload product images (requires product ID): https://mailchimp.com/developer/marketing/docs/e-commerce/
+    - Manage products (CRUD operations):
+        - Create (publish): https://medium.com/@lotus.lin/e-commerce-apis-introduction-29664558a3b0
+        - Read (specific product): https://mailchimp.com/developer/marketing/docs/e-commerce/
+        - Update: https://mailchimp.com/developer/marketing/docs/e-commerce/
+        - Delete: https://mailchimp.com/developer/marketing/docs/e-commerce/
+
+    **Profile Management:**
+
+    - Upload your profile picture: https://docs.render.com/
+
+    **Note:** Use Postman for sending POST requests to interact with the API.
+    """
+
+    return {
+        "Welcome Message": "Welcome to the E-commerce API!",
+        "API Status": "Under Maintenance (may take up to 50 seconds to initiate)",
+        "Functionality": "Create and manage your products and user accounts",
+        "Getting Started": {
+            "Registration": "https://e-commerce-api-7osv.onrender.com/registration",
+            "Verification": "https://e-commerce-api-7osv.onrender.com/user/me",
+        },
+        "Product Management": {
+            "View All Products": "https://e-commerce-api-7osv.onrender.com/product",
+            "Upload Product Images": "https://mailchimp.com/developer/marketing/docs/e-commerce/ (requires product ID)",
+            "CRUD Operations": {
+                "Create (Publish)": "https://medium.com/@lotus.lin/e-commerce-apis-introduction-29664558a3b0",
+                "Read (Specific Product)": "https://mailchimp.com/developer/marketing/docs/e-commerce/",
+                "Update": "https://mailchimp.com/developer/marketing/docs/e-commerce/",
+                "Delete": "https://mailchimp.com/developer/marketing/docs/e-commerce/",
+            },
+        },
+        "Profile Management": {
+            "Upload Profile Picture": "https://docs.render.com/",
+        },
+        "Note": "Use Postman for sending POST requests.",
+    }
 
 
 @app.post("/uploadfile/profile")
